@@ -47,5 +47,21 @@ pipeline {
                     waitForQualityGate abortPipeline: false, credentialsId: 'sonar_server'
                  }
                            }
+        stage('TRIVY FS Scan') {
+            steps {
+                sh "trivy fs . > trivyfs.txt"  // Results stored in a text file
+            }
+        }
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
+                        sh "docker build -t mavenapp ."
+                        sh "docker tag amazonprime sirishak83/mavenapp:latest"
+                        sh "docker push sirishak83/mavenapp:latest"
+                    }
+                }
+            }
+        }
 }
 }
