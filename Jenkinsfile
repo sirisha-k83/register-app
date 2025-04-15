@@ -57,7 +57,7 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {   
                         sh "docker build -t mavenapp ."
-                        sh "docker tag amazonprime sirishak83/mavenapp:latest"
+                        sh "docker tag mavenapp sirishak83/mavenapp:latest"
                         sh "docker push sirishak83/mavenapp:latest"
                     }
                 }
