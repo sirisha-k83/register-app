@@ -6,7 +6,6 @@ pipeline {
     }
     environment {
             SCANNER_HOME = tool 'Sonar_scanner'
-            JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
     }
     stages{
         stage("Cleanup Workspace"){
