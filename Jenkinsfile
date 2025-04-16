@@ -86,9 +86,8 @@
             body: "Oh no! Build #${env.BUILD_NUMBER} failed. Check Jenkins for details."
         )
     }
+  }
 }
 
-    }
-}
 
 
