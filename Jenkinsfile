@@ -71,23 +71,23 @@
     }
 
     post {
-        failure {
-            emailext(
-                body: '''${SCRIPT, template="groovy-html.template"}''',
-                subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - Failed",
-                mimeType: 'text/html',
-                to: "mailtvs16@gmail.com"
-            )
-        }
+    success {
+        emailext(
+            to: "mailtvs16@gmail.com",
+            subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - SUCCESS",
+            body: "Good news! Build #${env.BUILD_NUMBER} was successful."
+        )
+    }
 
-        success {
-            emailext(
-                body: '''${SCRIPT, template="groovy-html.template"}''',
-                subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - Successful",
-                mimeType: 'text/html',
-                to: "mailtvs16@gmail.com"
-            )
-        }
+    failure {
+        emailext(
+            to: "mailtvs16@gmail.com",
+            subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - FAILED",
+            body: "Oh no! Build #${env.BUILD_NUMBER} failed. Check Jenkins for details."
+        )
+    }
+}
+
     }
 }
 
