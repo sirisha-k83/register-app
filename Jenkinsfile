@@ -11,7 +11,7 @@ pipeline {
         ACR_NAME     = "rcr1983"
         IMAGE_NAME   = "mavenapp"
         TAG          = "v1"
-        AZURE_TENANT_ID = credentials('azure-tenant-id') // Add this as a secret text in Jenkins
+        AZURE_TENANT_ID = credentials('Az_tennantid') // Add this as a secret text in Jenkins
     }
 
     stages {
