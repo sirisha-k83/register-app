@@ -1,11 +1,17 @@
- pipeline {
+pipeline {
     agent any
+
     tools {
         jdk 'JDK'
         maven 'Maven'
     }
+
     environment {
         SCANNER_HOME = tool 'Sonar_scanner'
+        ACR_NAME     = "rcr1983"
+        IMAGE_NAME   = "mavenapp"
+        TAG          = "v1"
+        AZURE_TENANT_ID = credentials('azure-tenant-id') // Add this as a secret text in Jenkins
     }
 
     stages {
@@ -51,43 +57,60 @@
             }
         }
 
-        stage("TRIVY FS Scan") {
+        stage("Trivy Scan") {
             steps {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
 
-        stage("Docker Build & Push") {
+        stage("Docker Build & Tag for ACR") {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
-                        sh "docker build -t mavenapp ."
-                        sh "docker tag mavenapp sirishak83/mavenapp:latest"
-                        sh "docker push sirishak83/mavenapp:latest"
-                    }
+                    env.ACR_LOGIN_SERVER = "${ACR_NAME}.azurecr.io"
+                    sh """
+                        docker build -t ${IMAGE_NAME}:${TAG} .
+                        docker tag ${IMAGE_NAME}:${TAG} ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${TAG}
+                    """
                 }
+            }
+        }
+
+        stage("Login to Azure & Push to ACR") {
+            environment {
+                AZURE_CLIENT_ID     = credentials('azure-sp').username
+                AZURE_CLIENT_SECRET = credentials('azure-sp').password
+            }
+            steps {
+                sh '''
+                    az login --service-principal \
+                        -u $AZURE_CLIENT_ID \
+                        -p $AZURE_CLIENT_SECRET \
+                        --tenant $AZURE_TENANT_ID
+
+                    az acr login --name $ACR_NAME
+                    docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$TAG
+                '''
             }
         }
     }
 
     post {
-    success {
-        emailext(
-            to: "mailtvs16@gmail.com",
-            subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - SUCCESS",
-            body: "Good news! Build #${env.BUILD_NUMBER} was successful."
-        )
-    }
+        success {
+            emailext(
+                to: "mailtvs16@gmail.com",
+                subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - SUCCESS",
+                body: "✅ Build #${env.BUILD_NUMBER} was successful."
+            )
+        }
 
-    failure {
-        emailext(
-            to: "mailtvs16@gmail.com",
-            subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - FAILED",
-            body: "Oh no! Build #${env.BUILD_NUMBER} failed. Check Jenkins for details."
-        )
+        failure {
+            emailext(
+                to: "mailtvs16@gmail.com",
+                subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - FAILED",
+                body: "❌ Build #${env.BUILD_NUMBER} failed. Please check Jenkins logs."
+            )
+        }
     }
-  }
 }
-
 
 
