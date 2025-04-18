@@ -95,19 +95,7 @@
             }
         }
 
-       stage("Attach ACR to AKS") {
-           steps {
-             sh '''
-                 az aks update \
-                 --name myAKSCluster \
-                  --resource-group rg1 \
-                  --attach-acr rcr1983
-                '''
-          }
-  }
-
-
-        stage("Get kubeconfig") {
+             stage("Get kubeconfig") {
             steps {
                 sh '''
                     az aks get-credentials \
