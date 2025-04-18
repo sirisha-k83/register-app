@@ -11,7 +11,9 @@ pipeline {
         ACR_NAME     = "rcr1983"          // Your ACR name
         IMAGE_NAME   = "mavenapp"
         TAG          = "v1"
-    }
+        RESOURCE_GROUP = 'rg1'
+        CLUSTER_NAME   = 'myAKSCluster'
+        }
 
     stages {
         stage("Cleanup Workspace") {
@@ -92,6 +94,37 @@ pipeline {
                 }
             }
         }
+    }
+
+    stage('Create AKS Cluster') {
+      steps {
+        sh '''
+          az aks create \
+            --resource-group $RESOURCE_GROUP \
+            --name $CLUSTER_NAME \
+            --node-count 2 \
+            --enable-addons monitoring \
+            --generate-ssh-keys \
+            --attach-acr $ACR_NAME
+        '''
+      }
+    }
+
+    stage('Get kubeconfig') {
+      steps {
+        sh '''
+          az aks get-credentials \
+            --resource-group $RESOURCE_GROUP \
+            --name $CLUSTER_NAME \
+            --overwrite-existing
+        '''
+      }
+    }
+
+    stage('Check Nodes') {
+      steps {
+        sh 'kubectl get nodes'
+      }
     }
 
     post {
