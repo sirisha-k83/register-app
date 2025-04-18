@@ -98,13 +98,10 @@ pipeline {
         stage("Create AKS Cluster") {
             steps {
                 sh '''
-                    az aks update \
-                        --resource-group $RESOURCE_GROUP \
-                        --name $CLUSTER_NAME \
-                        --node-count 2 \
-                        --enable-addons monitoring \
-                        --generate-ssh-keys \
-                        --attach-acr $ACR_NAME
+                  az aks update \     #check if you are creating /updating the cluster
+                      --name myAKSCluster \
+                      --resource-group rg1 \
+                      --attach-acr rcr1983
                 '''
             }
         }
