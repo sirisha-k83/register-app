@@ -8,12 +8,9 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'Sonar_scanner'
-        ACR_NAME     = "rcr1983"
+        ACR_NAME     = "rcr1983"          // Your ACR name
         IMAGE_NAME   = "mavenapp"
         TAG          = "v1"
-        AZURE_CLIENT_ID     = credentials('azure-sp').username
-        AZURE_CLIENT_SECRET = credentials('azure-sp').password
-        AZURE_TENANT_ID = credentials('Az_tennantid') // Add this as a secret text in Jenkins
     }
 
     stages {
@@ -54,7 +51,7 @@ pipeline {
         stage("Quality Gate") {
             steps {
                 timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar_server'
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -65,33 +62,34 @@ pipeline {
             }
         }
 
-        stage("Docker Build & Tag for ACR") {
+        stage("Build Docker Image") {
             steps {
-                script {
-                    env.ACR_LOGIN_SERVER = "${ACR_NAME}.azurecr.io"
-                    sh """
-                        docker build -t ${IMAGE_NAME}:${TAG} .
-                        docker tag ${IMAGE_NAME}:${TAG} ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${TAG}
-                    """
-                }
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
             }
         }
 
-        stage("Login to Azure & Push to ACR") {
-            environment {
-                AZURE_CLIENT_ID     = credentials('azure-sp').username
-                AZURE_CLIENT_SECRET = credentials('azure-sp').password
-            }
+        stage("Login & Push to ACR") {
             steps {
-                sh '''
-                    az login --service-principal \
-                        -u $AZURE_CLIENT_ID \
-                        -p $AZURE_CLIENT_SECRET \
-                        --tenant $AZURE_TENANT_ID
+                script {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'azure-sp', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET'),
+                        string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                    ]) {
+                        env.ACR_LOGIN_SERVER = "${ACR_NAME}.azurecr.io"
 
-                    az acr login --name $ACR_NAME
-                    docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$TAG
-                '''
+                        sh '''
+                            az login --service-principal \
+                                -u $AZURE_CLIENT_ID \
+                                -p $AZURE_CLIENT_SECRET \
+                                --tenant $AZURE_TENANT_ID
+
+                            az acr login --name $ACR_NAME
+
+                            docker tag ${IMAGE_NAME}:${TAG} ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${TAG}
+                            docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${TAG}
+                        '''
+                    }
+                }
             }
         }
     }
@@ -114,5 +112,6 @@ pipeline {
         }
     }
 }
+
 
 
