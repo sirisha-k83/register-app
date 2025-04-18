@@ -98,7 +98,7 @@ pipeline {
         stage("Create AKS Cluster") {
             steps {
                 sh '''
-                  az aks update \     #check if you are creating /updating the cluster
+                  az aks update \     
                       --name myAKSCluster \
                       --resource-group rg1 \
                       --attach-acr rcr1983
