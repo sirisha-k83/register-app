@@ -73,7 +73,7 @@ pipeline {
                 script {
                     withCredentials([
                         usernamePassword(credentialsId: 'azure-sp', usernameVariable: 'AZURE_CLIENT_ID', passwordVariable: 'AZURE_CLIENT_SECRET'),
-                        string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                        string(credentialsId: 'Az_tennantid', variable: 'AZURE_TENANT_ID')
                     ]) {
                         env.ACR_LOGIN_SERVER = "${ACR_NAME}.azurecr.io"
 
