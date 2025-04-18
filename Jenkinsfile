@@ -98,7 +98,7 @@ pipeline {
         stage("Create AKS Cluster") {
             steps {
                 sh '''
-                    az aks create \
+                    az aks update \
                         --resource-group $RESOURCE_GROUP \
                         --name $CLUSTER_NAME \
                         --node-count 2 \
