@@ -1,4 +1,4 @@
-pipeline {
+ pipeline {
     agent any
 
     tools {
@@ -98,7 +98,7 @@ pipeline {
         stage("Create AKS Cluster") {
             steps {
                 sh '''
-                  az aks update \     
+                     az aks update \     
                       --name myAKSCluster \
                       --resource-group rg1 \
                       --attach-acr rcr1983
