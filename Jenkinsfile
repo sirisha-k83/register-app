@@ -8,7 +8,7 @@
 
     environment {
         SCANNER_HOME = tool 'Sonar_scanner'
-        ACR_NAME     = "rcr1983"          // Your ACR name
+        ACR_NAME     = "rcr1983"          
         IMAGE_NAME   = "mavenapp"
         TAG          = "v1"
         RESOURCE_GROUP = 'rg1'
@@ -118,7 +118,7 @@
             emailext(
                 to: "mailtvs16@gmail.com",
                 subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - SUCCESS",
-                body: "✅ Build #${env.BUILD_NUMBER} was successful."
+                body: "Build #${env.BUILD_NUMBER} was successful."
             )
         }
 
@@ -126,7 +126,7 @@
             emailext(
                 to: "mailtvs16@gmail.com",
                 subject: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - FAILED",
-                body: "❌ Build #${env.BUILD_NUMBER} failed. Please check Jenkins logs."
+                body: "Build #${env.BUILD_NUMBER} failed. Please check Jenkins logs."
             )
         }
     }
